@@ -23,7 +23,7 @@
   "author": "Sokdara Cheng <chengsokdara@gmail.com> (https://chengsokdara.github.io)",
   "repository": "github:chengsokdara/use-whisper",
   "scripts": {
-    "dev": "env NODE_ENV=development tsup",
+    "dev": "cp -f ./src/index.html build && esbuild ./src/index.jsx --bundle --outfile=build/app.js --servedir=build --watch",
     "build": "env NODE_ENV=production tsup",
     "lint-fix": "eslint ./src --ext .ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "lint-format": "prettier  --loglevel warn --write \"./**/*.{ts,tsx,css,md,json}\"",
@@ -46,6 +46,7 @@
     "@types/recordrtc": "^5.6.10",
     "@typescript-eslint/eslint-plugin": "^5.55.0",
     "@typescript-eslint/parser": "^5.55.0",
+    "esbuild": "^0.19.8",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.7.0",
     "eslint-plugin-prettier": "^4.2.1",
