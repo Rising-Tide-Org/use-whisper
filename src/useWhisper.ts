@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react'
 import type { Options, RecordRTCPromisesHandler } from 'recordrtc'
 import {
   defaultStopTimeout,
-  ffmpegCoreUrl,
   silenceRemoveCommand,
   whisperApiEndpoint,
 } from './configs'
@@ -49,6 +48,27 @@ const defaultTranscript: UseWhisperTranscript = {
   text: undefined,
 }
 
+// toBlobURL is used to bypass CORS issue, urls with the same
+// domain can be used directly.
+const toBlobURL = async (url: RequestInfo | URL, mimeType: string) => {
+  const resp = await fetch(url)
+  const body = await resp.blob()
+  const blob = new Blob([body], { type: mimeType })
+  return URL.createObjectURL(blob)
+}
+
+const toBlobURLPatched = async (
+  url: RequestInfo | URL,
+  mimeType: string,
+  patcher: (js: string) => string
+) => {
+  const resp = await fetch(url)
+  let body = await resp.text()
+  if (patcher) body = patcher(body)
+  const blob = new Blob([body], { type: mimeType })
+  return URL.createObjectURL(blob)
+}
+
 /**
  * React Hook for OpenAI Whisper
  */
@@ -88,6 +108,40 @@ export const useWhisper: UseWhisperHook = (config) => {
   const [transcript, setTranscript] =
     useState<UseWhisperTranscript>(defaultTranscript)
 
+  const ffmpegRef = useRef()
+  const [ffmpegCoreLoaded, setFFmpegCoreLoaded] = useState<boolean>(false)
+
+  const loadFFmpegCore = async () => {
+    const baseURLFFMPEG = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/umd'
+    const ffmpegBlobURL = await toBlobURLPatched(
+      `${baseURLFFMPEG}/ffmpeg.js`,
+      'text/javascript',
+      (js) => {
+        return js.replace('new URL(e.p+e.u(814),e.b)', 's.workerURL')
+      }
+    )
+    const baseURLCore = 'https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd'
+    const config = {
+      workerURL: await toBlobURL(
+        `${baseURLFFMPEG}/814.ffmpeg.js`,
+        'text/javascript'
+      ),
+      coreURL: await toBlobURL(
+        `${baseURLCore}/ffmpeg-core.js`,
+        'text/javascript'
+      ),
+      wasmURL: await toBlobURL(
+        `${baseURLCore}/ffmpeg-core.wasm`,
+        'application/wasm'
+      ),
+    }
+    await import(ffmpegBlobURL)
+    ffmpegRef.current = new FFmpegWASM.FFmpeg()
+    const ffmpeg = ffmpegRef.current
+    ffmpeg.on('log', ({ message }) => console.log(message))
+    await ffmpeg.load(config)
+    setFFmpegCoreLoaded(true)
+  }
   /**
    * cleanup on component unmounted
    * - flush out and cleanup lamejs encoder instance
@@ -165,6 +219,9 @@ export const useWhisper: UseWhisperHook = (config) => {
    */
   const onStartRecording = async () => {
     try {
+      if (!ffmpegCoreLoaded) {
+        loadFFmpegCore()
+      }
       if (!stream.current) {
         await onStartStreaming()
       }
@@ -382,20 +439,12 @@ export const useWhisper: UseWhisperHook = (config) => {
         if (recordState === 'stopped') {
           setTranscribing(true)
           let blob = await recorder.current.getBlob()
-          if (removeSilence) {
-            const { createFFmpeg } = await import('@ffmpeg/ffmpeg')
-            const ffmpeg = createFFmpeg({
-              mainName: 'main',
-              corePath: ffmpegCoreUrl,
-              log: true,
-            })
-            if (!ffmpeg.isLoaded()) {
-              await ffmpeg.load()
-            }
+          if (removeSilence && ffmpegCoreLoaded) {
             const buffer = await blob.arrayBuffer()
             console.log({ in: buffer.byteLength })
-            ffmpeg.FS('writeFile', 'in.wav', new Uint8Array(buffer))
-            await ffmpeg.run(
+            const ffmpeg = ffmpegRef.current
+            await ffmpeg.writeFile('in.wav', new Uint8Array(buffer))
+            await ffmpeg.exec([
               '-i', // Input
               'in.wav',
               '-acodec', // Audio codec
@@ -406,13 +455,13 @@ export const useWhisper: UseWhisperHook = (config) => {
               '44100',
               '-af', // Audio filter = remove silence from start to end with 2 seconds in between
               silenceRemoveCommand,
-              'out.mp3' // Output
-            )
-            const out = ffmpeg.FS('readFile', 'out.mp3')
+              'out.mp3', // Output
+            ])
+            const data = await ffmpeg.readFile('out.mp3')
+            const out = data as Uint8Array
             console.log({ out: out.buffer.byteLength })
-            // 225 seems to be empty mp3 file
-            if (out.length <= 225) {
-              ffmpeg.exit()
+            // 358 seems to be empty mp3 file
+            if (out.length <= 358) {
               setTranscript({
                 blob,
               })
@@ -420,7 +469,6 @@ export const useWhisper: UseWhisperHook = (config) => {
               return
             }
             blob = new Blob([out.buffer], { type: 'audio/mpeg' })
-            ffmpeg.exit()
           } else {
             const buffer = await blob.arrayBuffer()
             console.log({ wav: buffer.byteLength })

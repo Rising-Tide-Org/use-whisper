@@ -14,6 +14,7 @@ function App() {
     stopRecording,
   } = useWhisper({
     apiKey: key,
+    removeSilence: true,
   })
 
   return (
