@@ -107,6 +107,7 @@ export const useWhisper: UseWhisperHook = (config) => {
   const [transcribing, setTranscribing] = useState<boolean>(false)
   const [transcript, setTranscript] =
     useState<UseWhisperTranscript>(defaultTranscript)
+  const [isTranscribingError, setIsTranscribingError] = useState<boolean>(false)
 
   const ffmpegRef = useRef()
   const [ffmpegCoreLoaded, setFFmpegCoreLoaded] = useState<boolean>(false)
@@ -206,6 +207,13 @@ export const useWhisper: UseWhisperHook = (config) => {
    */
   const stopRecording = async () => {
     await onStopRecording()
+  }
+
+  /**
+   * manually start transcription
+   */
+  const startTranscribing = async () => {
+    await onTranscribing()
   }
 
   /**
@@ -421,6 +429,32 @@ export const useWhisper: UseWhisperHook = (config) => {
   }
 
   /**
+   * Transcribes the given blob.
+   * - by either calling `onTranscribeCallback`
+   * - or `onWhispered`
+   * - set the error state if no text is returned
+   * @param blob - The blob to transcribe.
+   */
+  const transcribe = async (blob: Blob) => {
+    if (typeof onTranscribeCallback === 'function') {
+      const transcribed = await onTranscribeCallback(blob)
+      console.log('onTranscribe', transcribed)
+      setTranscript(transcribed)
+    } else {
+      const file = new File([blob], 'speech.mp3', { type: 'audio/mpeg' })
+      const text: string | undefined = await onWhispered(file)
+      console.log('onTranscribing', { text })
+      setTranscript({
+        blob,
+        text,
+      })
+      if (text === undefined) {
+        setIsTranscribingError(true)
+      }
+    }
+  }
+
+  /**
    * start Whisper transcrition event
    * - make sure recorder state is stopped
    * - set transcribing state to true
@@ -476,19 +510,16 @@ export const useWhisper: UseWhisperHook = (config) => {
             blob = new Blob([mp3], { type: 'audio/mpeg' })
             console.log({ blob, mp3: mp3.byteLength })
           }
-          if (typeof onTranscribeCallback === 'function') {
-            const transcribed = await onTranscribeCallback(blob)
-            console.log('onTranscribe', transcribed)
-            setTranscript(transcribed)
-          } else {
-            const file = new File([blob], 'speech.mp3', { type: 'audio/mpeg' })
-            const text = await onWhispered(file)
-            console.log('onTranscribing', { text })
-            setTranscript({
-              blob,
-              text,
-            })
-          }
+          await transcribe(blob)
+          setTranscribing(false)
+        }
+      } else {
+        // recorder and encoder equal to undefined means the recording is not started or the transcription errored
+        const { blob } = transcript
+        if (blob) {
+          // blob from last recording exists, try to transcribe it again
+          setTranscribing(true)
+          await transcribe(blob)
           setTranscribing(false)
         }
       }
@@ -567,10 +598,16 @@ export const useWhisper: UseWhisperHook = (config) => {
         headers['Authorization'] = `Bearer ${apiKey}`
       }
       const { default: axios } = await import('axios')
-      const response = await axios.post(whisperApiEndpoint + mode, body, {
-        headers,
-      })
-      return response.data.text
+      const { default: axiosRetry } = await import('axios-retry')
+      axiosRetry(axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay })
+      try {
+        const response = await axios.post(whisperApiEndpoint + mode, body, {
+          headers,
+        })
+        return response.data.text
+      } catch (error) {
+        return undefined
+      }
     },
     [apiKey, mode, whisperConfig]
   )
@@ -580,8 +617,10 @@ export const useWhisper: UseWhisperHook = (config) => {
     speaking,
     transcribing,
     transcript,
+    isTranscribingError,
     pauseRecording,
     startRecording,
     stopRecording,
+    startTranscribing,
   }
 }

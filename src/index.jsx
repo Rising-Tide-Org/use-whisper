@@ -9,9 +9,11 @@ function App() {
     speaking,
     transcribing,
     transcript,
+    isTranscribingError,
     pauseRecording,
     startRecording,
     stopRecording,
+    startTranscribing,
   } = useWhisper({
     apiKey: key,
     removeSilence: true,
@@ -23,9 +25,11 @@ function App() {
       <p>Speaking: {speaking}</p>
       <p>Transcribing: {transcribing}</p>
       <p>Transcribed Text: {transcript.text}</p>
+      <p>Transcription error: {isTranscribingError}</p>
       <button onClick={() => startRecording()}>Start</button>
       <button onClick={() => pauseRecording()}>Pause</button>
       <button onClick={() => stopRecording()}>Stop</button>
+      <button onClick={() => startTranscribing()}>Transcribe</button>
     </div>
   )
 }
