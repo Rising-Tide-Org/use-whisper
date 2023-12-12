@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "@chengsokdara/react-hooks-async": "^0.0.2",
+    "@ffmpeg/ffmpeg": "^0.12.7",
+    "@ffmpeg/types": "^0.12.2",
     "axios": "^1.3.4",
     "axios-retry": "^4.0.0",
     "hark": "^1.2.3",
