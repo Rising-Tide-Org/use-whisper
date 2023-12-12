@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<script>
+  new EventSource('/esbuild').addEventListener('change', () =>
+    location.reload()
+  )
+</script>
+<div id="root"></div>
+<script src="/app.js"></script>
