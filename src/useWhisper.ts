@@ -15,6 +15,7 @@ import {
   UseWhisperTimeout,
   UseWhisperTranscript,
 } from './types'
+import { FFmpeg } from '@ffmpeg/ffmpeg'
 
 /**
  * default useWhisper configuration
@@ -109,7 +110,7 @@ export const useWhisper: UseWhisperHook = (config) => {
     useState<UseWhisperTranscript>(defaultTranscript)
   const [isTranscribingError, setIsTranscribingError] = useState<boolean>(false)
 
-  const ffmpegRef = useRef()
+  const ffmpegRef = useRef<FFmpeg>()
   const [ffmpegCoreLoaded, setFFmpegCoreLoaded] = useState<boolean>(false)
 
   const loadFFmpegCore = async () => {
@@ -136,12 +137,13 @@ export const useWhisper: UseWhisperHook = (config) => {
         'application/wasm'
       ),
     }
-    await import(ffmpegBlobURL)
-    ffmpegRef.current = new FFmpegWASM.FFmpeg()
-    const ffmpeg = ffmpegRef.current
-    ffmpeg.on('log', ({ message }) => console.log(message))
-    await ffmpeg.load(config)
-    setFFmpegCoreLoaded(true)
+    import(ffmpegBlobURL).then(async (FFmpegWASM) => {
+      const ffmpeg = new FFmpegWASM.FFmpeg()
+      ffmpegRef.current = ffmpeg
+      ffmpeg.on('log', ({ message }) => console.log(message))
+      await ffmpeg.load(config)
+      setFFmpegCoreLoaded(true)
+    })
   }
   /**
    * cleanup on component unmounted
@@ -477,32 +479,34 @@ export const useWhisper: UseWhisperHook = (config) => {
             const buffer = await blob.arrayBuffer()
             console.log({ in: buffer.byteLength })
             const ffmpeg = ffmpegRef.current
-            await ffmpeg.writeFile('in.wav', new Uint8Array(buffer))
-            await ffmpeg.exec([
-              '-i', // Input
-              'in.wav',
-              '-acodec', // Audio codec
-              'libmp3lame',
-              '-b:a', // Audio bitrate
-              '96k',
-              '-ar', // Audio sample rate
-              '44100',
-              '-af', // Audio filter = remove silence from start to end with 2 seconds in between
-              silenceRemoveCommand,
-              'out.mp3', // Output
-            ])
-            const data = await ffmpeg.readFile('out.mp3')
-            const out = data as Uint8Array
-            console.log({ out: out.buffer.byteLength })
-            // 358 seems to be empty mp3 file
-            if (out.length <= 358) {
-              setTranscript({
-                blob,
-              })
-              setTranscribing(false)
-              return
+            if (ffmpeg) {
+              await ffmpeg.writeFile('in.wav', new Uint8Array(buffer))
+              await ffmpeg.exec([
+                '-i', // Input
+                'in.wav',
+                '-acodec', // Audio codec
+                'libmp3lame',
+                '-b:a', // Audio bitrate
+                '96k',
+                '-ar', // Audio sample rate
+                '44100',
+                '-af', // Audio filter = remove silence from start to end with 2 seconds in between
+                silenceRemoveCommand,
+                'out.mp3', // Output
+              ])
+              const data = await ffmpeg.readFile('out.mp3')
+              const out = data as Uint8Array
+              console.log({ out: out.buffer.byteLength })
+              // 358 seems to be empty mp3 file
+              if (out.length <= 358) {
+                setTranscript({
+                  blob,
+                })
+                setTranscribing(false)
+                return
+              }
+              blob = new Blob([out.buffer], { type: 'audio/mpeg' })
             }
-            blob = new Blob([out.buffer], { type: 'audio/mpeg' })
           } else {
             const buffer = await blob.arrayBuffer()
             console.log({ wav: buffer.byteLength })
