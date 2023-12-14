@@ -32,6 +32,7 @@ const defaultConfig: UseWhisperConfig = {
   timeSlice: 1_000,
   onDataAvailable: undefined,
   onTranscribe: undefined,
+  ffmpegURL: '/',
 }
 
 /**
@@ -47,27 +48,6 @@ const defaultTimeout: UseWhisperTimeout = {
 const defaultTranscript: UseWhisperTranscript = {
   blob: undefined,
   text: undefined,
-}
-
-// toBlobURL is used to bypass CORS issue, urls with the same
-// domain can be used directly.
-const toBlobURL = async (url: RequestInfo | URL, mimeType: string) => {
-  const resp = await fetch(url)
-  const body = await resp.blob()
-  const blob = new Blob([body], { type: mimeType })
-  return URL.createObjectURL(blob)
-}
-
-const toBlobURLPatched = async (
-  url: RequestInfo | URL,
-  mimeType: string,
-  patcher: (js: string) => string
-) => {
-  const resp = await fetch(url)
-  let body = await resp.text()
-  if (patcher) body = patcher(body)
-  const blob = new Blob([body], { type: mimeType })
-  return URL.createObjectURL(blob)
 }
 
 /**
@@ -87,6 +67,7 @@ export const useWhisper: UseWhisperHook = (config) => {
     whisperConfig,
     onDataAvailable: onDataAvailableCallback,
     onTranscribe: onTranscribeCallback,
+    ffmpegURL,
   } = {
     ...defaultConfig,
     ...config,
@@ -114,30 +95,13 @@ export const useWhisper: UseWhisperHook = (config) => {
   const [ffmpegCoreLoaded, setFFmpegCoreLoaded] = useState<boolean>(false)
 
   const loadFFmpegCore = async () => {
-    const baseURLFFMPEG = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/umd'
-    const ffmpegBlobURL = await toBlobURLPatched(
-      `${baseURLFFMPEG}/ffmpeg.js`,
-      'text/javascript',
-      (js) => {
-        return js.replace('new URL(e.p+e.u(814),e.b)', 's.workerURL')
-      }
-    )
-    const baseURLCore = 'https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd'
     const config = {
-      workerURL: await toBlobURL(
-        `${baseURLFFMPEG}/814.ffmpeg.js`,
-        'text/javascript'
-      ),
-      coreURL: await toBlobURL(
-        `${baseURLCore}/ffmpeg-core.js`,
-        'text/javascript'
-      ),
-      wasmURL: await toBlobURL(
-        `${baseURLCore}/ffmpeg-core.wasm`,
-        'application/wasm'
-      ),
+      workerURL: `${ffmpegURL}814.ffmpeg.js`,
+      coreURL: `${ffmpegURL}ffmpeg-core.js`,
+      wasmURL: `${ffmpegURL}ffmpeg-core.wasm`,
     }
-    import(ffmpegBlobURL).then(async (FFmpegWASM) => {
+    const ffmpegModuleURL = `${ffmpegURL}ffmpeg.js`
+    import(ffmpegModuleURL).then(async (FFmpegWASM) => {
       const ffmpeg = new FFmpegWASM.FFmpeg()
       ffmpegRef.current = ffmpeg
       ffmpeg.on('log', ({ message }) => console.log(message))
