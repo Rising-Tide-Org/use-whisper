@@ -414,6 +414,8 @@ export const useWhisper: UseWhisperHook = (config) => {
       })
       if (text === undefined) {
         setIsTranscribingError(true)
+      } else {
+        setIsTranscribingError(false)
       }
     }
   }
