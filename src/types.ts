@@ -28,9 +28,11 @@ export type UseWhisperReturn = {
   speaking: boolean
   transcribing: boolean
   transcript: UseWhisperTranscript
+  isTranscribingError: boolean
   pauseRecording: () => Promise<void>
   startRecording: () => Promise<void>
   stopRecording: () => Promise<void>
+  startTranscribing: () => Promise<void>
 }
 
 export type UseWhisperHook = (config?: UseWhisperConfig) => UseWhisperReturn
