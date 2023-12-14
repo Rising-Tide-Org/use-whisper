@@ -32,7 +32,7 @@ const defaultConfig: UseWhisperConfig = {
   timeSlice: 1_000,
   onDataAvailable: undefined,
   onTranscribe: undefined,
-  ffmpegURL: '/',
+  ffmpegURL: '',
 }
 
 /**
@@ -96,18 +96,16 @@ export const useWhisper: UseWhisperHook = (config) => {
 
   const loadFFmpegCore = async () => {
     const config = {
-      workerURL: `${ffmpegURL}814.ffmpeg.js`,
-      coreURL: `${ffmpegURL}ffmpeg-core.js`,
-      wasmURL: `${ffmpegURL}ffmpeg-core.wasm`,
+      workerURL: `${ffmpegURL}/814.ffmpeg.js`,
+      coreURL: `${ffmpegURL}/ffmpeg-core.js`,
+      wasmURL: `${ffmpegURL}/ffmpeg-core.wasm`,
     }
-    const ffmpegModuleURL = `${ffmpegURL}ffmpeg.js`
-    import(ffmpegModuleURL).then(async (FFmpegWASM) => {
-      const ffmpeg = new FFmpegWASM.FFmpeg()
-      ffmpegRef.current = ffmpeg
-      ffmpeg.on('log', ({ message }) => console.log(message))
-      await ffmpeg.load(config)
-      setFFmpegCoreLoaded(true)
-    })
+    const { FFmpeg } = await import('@ffmpeg/ffmpeg')
+    const ffmpeg = new FFmpeg()
+    ffmpegRef.current = ffmpeg
+    ffmpeg.on('log', ({ message }) => console.log(message))
+    await ffmpeg.load(config)
+    setFFmpegCoreLoaded(true)
   }
   /**
    * cleanup on component unmounted

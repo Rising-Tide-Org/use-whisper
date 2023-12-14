@@ -259,10 +259,9 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.36.0.tgz#9837f768c03a1e4a30bd304a64fb8844f0e72efe"
   integrity sha512-lxJ9R5ygVm8ZWgYdUweoq5ownDlJ4upvoWmO4eLxBYHdMo+vZ/Rx0EN6MbKWDJOSUGrqJy2Gt+Dyv/VKml0fjg==
 
-"@ffmpeg/ffmpeg@^0.12.7":
+"@ffmpeg/ffmpeg@https://gitpkg.now.sh/anvanvan/ffmpeg.wasm/packages/ffmpeg?custom-worker-url":
   version "0.12.7"
-  resolved "https://registry.yarnpkg.com/@ffmpeg/ffmpeg/-/ffmpeg-0.12.7.tgz#fbe8b28cae2183ff74456d77fdc2803e54048df0"
-  integrity sha512-Uw9h1tNU4/Q4YRrgBKvnKiH5gpL+nl8h4HRfvSK0K93MqVOan6Qs3Lj82l9i1qj6xQLPramXw0Wl6g65W4pfnA==
+  resolved "https://gitpkg.now.sh/anvanvan/ffmpeg.wasm/packages/ffmpeg?custom-worker-url#d2c49015c4ff6c0864826b6ab94b80e1a082ef2a"
   dependencies:
     "@ffmpeg/types" "^0.12.2"
 

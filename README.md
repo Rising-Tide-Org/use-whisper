@@ -259,7 +259,7 @@ _most of these dependecies are lazy loaded, so it is only imported when it is ne
 | whisperConfig   | [WhisperApiConfig](#whisperapiconfig)              | undefined      | Whisper API transcription config                                                                                     |
 | onDataAvailable | (blob: Blob) => void                               | undefined      | callback function for getting recorded blob in interval between timeSlice                                            |
 | onTranscribe    | (blob: Blob) => Promise<[Transcript](#transcript)> | undefined      | callback function to handle transcription on your own custom server                                                  |
-| ffmpegURL       | string                                             | '/'            | path to the ffmpeg files                                                                                             |
+| ffmpegURL       | string                                             | ''             | path to the ffmpeg files without a trailing slash                                                                    |
 
 - ###### WhisperApiConfig
 
