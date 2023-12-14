@@ -11,7 +11,7 @@ export type UseWhisperConfig = {
   whisperConfig?: WhisperApiConfig
   onDataAvailable?: (blob: Blob) => void
   onTranscribe?: (blob: Blob) => Promise<UseWhisperTranscript>
-  ffmpegURL?: string
+  ffmpegCoreURL?: string
 }
 
 export type UseWhisperTimeout = {

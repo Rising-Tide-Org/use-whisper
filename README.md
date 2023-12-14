@@ -245,21 +245,21 @@ _most of these dependecies are lazy loaded, so it is only imported when it is ne
 
 - ###### Config Object
 
-| Name            | Type                                               | Default Value  | Description                                                                                                          |
-| --------------- | -------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| apiKey          | string                                             | ''             | your OpenAI API token                                                                                                |
-| autoStart       | boolean                                            | false          | auto start speech recording on component mount                                                                       |
-| autoTranscribe  | boolean                                            | true           | should auto transcribe after stop recording                                                                          |
-| mode            | string                                             | transcriptions | control Whisper mode either transcriptions or translations, currently only support translation to English            |
-| nonStop         | boolean                                            | false          | if true, record will auto stop after stopTimeout. However if user keep on speaking, the recorder will keep recording |
-| removeSilence   | boolean                                            | false          | remove silence before sending file to OpenAI API                                                                     |
-| stopTimeout     | number                                             | 5,000 ms       | if nonStop is true, this become required. This control when the recorder auto stop                                   |
-| streaming       | boolean                                            | false          | transcribe speech in real-time based on timeSlice                                                                    |
-| timeSlice       | number                                             | 1000 ms        | interval between each onDataAvailable event                                                                          |
-| whisperConfig   | [WhisperApiConfig](#whisperapiconfig)              | undefined      | Whisper API transcription config                                                                                     |
-| onDataAvailable | (blob: Blob) => void                               | undefined      | callback function for getting recorded blob in interval between timeSlice                                            |
-| onTranscribe    | (blob: Blob) => Promise<[Transcript](#transcript)> | undefined      | callback function to handle transcription on your own custom server                                                  |
-| ffmpegURL       | string                                             | ''             | path to the ffmpeg files without a trailing slash                                                                    |
+| Name            | Type                                               | Default Value                                                  | Description                                                                                                          |
+| --------------- | -------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| apiKey          | string                                             | ''                                                             | your OpenAI API token                                                                                                |
+| autoStart       | boolean                                            | false                                                          | auto start speech recording on component mount                                                                       |
+| autoTranscribe  | boolean                                            | true                                                           | should auto transcribe after stop recording                                                                          |
+| mode            | string                                             | transcriptions                                                 | control Whisper mode either transcriptions or translations, currently only support translation to English            |
+| nonStop         | boolean                                            | false                                                          | if true, record will auto stop after stopTimeout. However if user keep on speaking, the recorder will keep recording |
+| removeSilence   | boolean                                            | false                                                          | remove silence before sending file to OpenAI API                                                                     |
+| stopTimeout     | number                                             | 5,000 ms                                                       | if nonStop is true, this become required. This control when the recorder auto stop                                   |
+| streaming       | boolean                                            | false                                                          | transcribe speech in real-time based on timeSlice                                                                    |
+| timeSlice       | number                                             | 1000 ms                                                        | interval between each onDataAvailable event                                                                          |
+| whisperConfig   | [WhisperApiConfig](#whisperapiconfig)              | undefined                                                      | Whisper API transcription config                                                                                     |
+| onDataAvailable | (blob: Blob) => void                               | undefined                                                      | callback function for getting recorded blob in interval between timeSlice                                            |
+| onTranscribe    | (blob: Blob) => Promise<[Transcript](#transcript)> | undefined                                                      | callback function to handle transcription on your own custom server                                                  |
+| ffmpegCoreURL   | string                                             | 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js' | path to the ffmpeg core                                                                                              |
 
 - ###### WhisperApiConfig
 

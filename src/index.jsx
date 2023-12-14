@@ -17,6 +17,7 @@ function App() {
   } = useWhisper({
     apiKey: key,
     removeSilence: true,
+    ffmpegCoreURL: 'http://127.0.0.1:8000/ffmpeg-core.js',
   })
 
   return (

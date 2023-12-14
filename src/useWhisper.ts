@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Options, RecordRTCPromisesHandler } from 'recordrtc'
 import {
   defaultStopTimeout,
+  defaultFFmpegCoreUrl,
   silenceRemoveCommand,
   whisperApiEndpoint,
 } from './configs'
@@ -15,7 +16,7 @@ import {
   UseWhisperTimeout,
   UseWhisperTranscript,
 } from './types'
-import { FFmpeg } from '@ffmpeg/ffmpeg'
+import { createFFmpeg, FFmpeg } from '@ffmpeg/ffmpeg'
 
 /**
  * default useWhisper configuration
@@ -32,7 +33,7 @@ const defaultConfig: UseWhisperConfig = {
   timeSlice: 1_000,
   onDataAvailable: undefined,
   onTranscribe: undefined,
-  ffmpegURL: '',
+  ffmpegCoreURL: defaultFFmpegCoreUrl,
 }
 
 /**
@@ -67,7 +68,7 @@ export const useWhisper: UseWhisperHook = (config) => {
     whisperConfig,
     onDataAvailable: onDataAvailableCallback,
     onTranscribe: onTranscribeCallback,
-    ffmpegURL,
+    ffmpegCoreURL,
   } = {
     ...defaultConfig,
     ...config,
@@ -95,16 +96,15 @@ export const useWhisper: UseWhisperHook = (config) => {
   const [ffmpegCoreLoaded, setFFmpegCoreLoaded] = useState<boolean>(false)
 
   const loadFFmpegCore = async () => {
-    const config = {
-      workerURL: `${ffmpegURL}/814.ffmpeg.js`,
-      coreURL: `${ffmpegURL}/ffmpeg-core.js`,
-      wasmURL: `${ffmpegURL}/ffmpeg-core.wasm`,
-    }
-    const { FFmpeg } = await import('@ffmpeg/ffmpeg')
-    const ffmpeg = new FFmpeg()
+    const ffmpeg = createFFmpeg({
+      mainName: 'main',
+      corePath: ffmpegCoreURL,
+      log: true,
+    })
     ffmpegRef.current = ffmpeg
-    ffmpeg.on('log', ({ message }) => console.log(message))
-    await ffmpeg.load(config)
+    if (!ffmpeg.isLoaded()) {
+      await ffmpeg.load()
+    }
     setFFmpegCoreLoaded(true)
   }
   /**
@@ -442,8 +442,8 @@ export const useWhisper: UseWhisperHook = (config) => {
             console.log({ in: buffer.byteLength })
             const ffmpeg = ffmpegRef.current
             if (ffmpeg) {
-              await ffmpeg.writeFile('in.wav', new Uint8Array(buffer))
-              await ffmpeg.exec([
+              ffmpeg.FS('writeFile', 'in.wav', new Uint8Array(buffer))
+              await ffmpeg.run(
                 '-i', // Input
                 'in.wav',
                 '-acodec', // Audio codec
@@ -454,9 +454,9 @@ export const useWhisper: UseWhisperHook = (config) => {
                 '44100',
                 '-af', // Audio filter = remove silence from start to end with 2 seconds in between
                 silenceRemoveCommand,
-                'out.mp3', // Output
-              ])
-              const data = await ffmpeg.readFile('out.mp3')
+                'out.mp3' // Output
+              )
+              const data = ffmpeg.FS('readFile', 'out.mp3')
               const out = data as Uint8Array
               console.log({ out: out.buffer.byteLength })
               // 358 seems to be empty mp3 file

@@ -1,18 +1,22 @@
 'use strict';
 
-var chunkG7VPYZGL_cjs = require('./chunk-G7VPYZGL.cjs');
+var chunk57AVKP4H_cjs = require('./chunk-57AVKP4H.cjs');
 
 
 
+Object.defineProperty(exports, 'defaultFFmpegCoreUrl', {
+	enumerable: true,
+	get: function () { return chunk57AVKP4H_cjs.b; }
+});
 Object.defineProperty(exports, 'defaultStopTimeout', {
 	enumerable: true,
-	get: function () { return chunkG7VPYZGL_cjs.a; }
+	get: function () { return chunk57AVKP4H_cjs.a; }
 });
 Object.defineProperty(exports, 'silenceRemoveCommand', {
 	enumerable: true,
-	get: function () { return chunkG7VPYZGL_cjs.b; }
+	get: function () { return chunk57AVKP4H_cjs.c; }
 });
 Object.defineProperty(exports, 'whisperApiEndpoint', {
 	enumerable: true,
-	get: function () { return chunkG7VPYZGL_cjs.c; }
+	get: function () { return chunk57AVKP4H_cjs.d; }
 });
