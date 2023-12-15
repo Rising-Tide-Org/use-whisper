@@ -463,6 +463,8 @@ export const useWhisper: UseWhisperHook = (config) => {
               console.log({ out: out.buffer.byteLength })
               // 358 seems to be empty mp3 file
               if (out.length <= 358) {
+                ffmpeg.exit()
+                setFFmpegCoreLoaded(false)
                 setTranscript({
                   blob,
                 })
@@ -470,6 +472,8 @@ export const useWhisper: UseWhisperHook = (config) => {
                 return
               }
               blob = new Blob([out.buffer], { type: 'audio/mpeg' })
+              ffmpeg.exit()
+              setFFmpegCoreLoaded(false)
             }
           } else {
             const buffer = await blob.arrayBuffer()
