@@ -400,24 +400,18 @@ export const useWhisper: UseWhisperHook = (config) => {
    * @param blob - The blob to transcribe.
    */
   const transcribe = async (blob: Blob) => {
+    let result: string | undefined
     if (typeof onTranscribeCallback === 'function') {
-      const transcribed = await onTranscribeCallback(blob)
-      console.log('onTranscribe', transcribed)
-      setTranscript(transcribed)
+      const { text } = await onTranscribeCallback(blob)
+      result = text
     } else {
       const file = new File([blob], 'speech.mp3', { type: 'audio/mpeg' })
-      const text: string | undefined = await onWhispered(file)
-      console.log('onTranscribing', { text })
-      setTranscript({
-        blob,
-        text,
-      })
-      if (text === undefined) {
-        setIsTranscribingError(true)
-      } else {
-        setIsTranscribingError(false)
-      }
+      result = await onWhispered(file)
     }
+    console.log('onTranscribe', { result })
+
+    setTranscript({ blob, text: result })
+    setIsTranscribingError(result === undefined)
   }
 
   /**
