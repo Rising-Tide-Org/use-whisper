@@ -181,6 +181,13 @@ export const useWhisper: UseWhisperHook = (config) => {
   }
 
   /**
+   * clear transcription error state
+   */
+  const clearTranscibingError = () => {
+    setIsTranscribingError(false)
+  }
+
+  /**
    * start speech recording event
    * - first ask user for media stream
    * - create recordrtc instance and pass media stream to it
@@ -588,5 +595,6 @@ export const useWhisper: UseWhisperHook = (config) => {
     startRecording,
     stopRecording,
     startTranscribing,
+    clearTranscibingError,
   }
 }

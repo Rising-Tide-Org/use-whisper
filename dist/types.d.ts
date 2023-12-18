@@ -30,6 +30,7 @@ type UseWhisperReturn = {
     startRecording: () => Promise<void>;
     stopRecording: () => Promise<void>;
     startTranscribing: () => Promise<void>;
+    clearTranscibingError: () => void;
 };
 type UseWhisperHook = (config?: UseWhisperConfig) => UseWhisperReturn;
 type WhisperApiConfig = {
