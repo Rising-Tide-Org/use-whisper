@@ -183,7 +183,7 @@ export const useWhisper: UseWhisperHook = (config) => {
   /**
    * clear transcription error state
    */
-  const clearTranscibingError = () => {
+  const clearTranscribingError = () => {
     setIsTranscribingError(false)
   }
 
