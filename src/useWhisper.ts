@@ -198,7 +198,8 @@ export const useWhisper: UseWhisperHook = (config) => {
    */
   const onStartRecording = async () => {
     try {
-      if (!ffmpegCoreLoaded) {
+      if (!ffmpegCoreLoaded && !streaming) {
+        // only load ffmpeg here already if not streaming
         loadFFmpegCore()
       }
       if (!stream.current) {
@@ -435,6 +436,10 @@ export const useWhisper: UseWhisperHook = (config) => {
   const onTranscribing = async () => {
     console.log('transcribing speech')
     try {
+      if (!ffmpegCoreLoaded && streaming) {
+        // if streaming then we load it before transcription
+        loadFFmpegCore()
+      }
       if (encoder.current && recorder.current) {
         const recordState = await recorder.current.getState()
         if (recordState === 'stopped') {
