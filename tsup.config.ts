@@ -17,7 +17,7 @@ export const tsup: Options = {
   outDir: env === 'production' ? 'dist' : 'lib',
   entry: ['src/**/*.ts'],
   treeshake: true,
-  // esbuildOptions: (options) => {
-  //   options.drop = env === 'production' ? ['console', 'debugger'] : undefined
-  // },
+  esbuildOptions: (options) => {
+    options.drop = env === 'production' ? ['console', 'debugger'] : undefined
+  },
 }
