@@ -1,5 +1,5 @@
-import { a } from './chunk-M2P4SQI2.js';
-export { a as useWhisper } from './chunk-M2P4SQI2.js';
+import { a } from './chunk-XGJMUN6O.js';
+export { a as useWhisper } from './chunk-XGJMUN6O.js';
 import './chunk-VO7VPLVP.js';
 
 var o=a;

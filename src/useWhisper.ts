@@ -187,6 +187,10 @@ export const useWhisper: UseWhisperHook = (config) => {
     setIsTranscribingError(false)
   }
 
+  const clearTranscript = () => {
+    setTranscript(defaultTranscript)
+  }
+
   /**
    * start speech recording event
    * - first ask user for media stream
@@ -600,5 +604,6 @@ export const useWhisper: UseWhisperHook = (config) => {
     stopRecording,
     startTranscribing,
     clearTranscribingError,
+    clearTranscript,
   }
 }
