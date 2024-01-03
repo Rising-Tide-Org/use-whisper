@@ -204,6 +204,10 @@ export const useWhisper: UseWhisperHook = (config) => {
       if (!stream.current) {
         await onStartStreaming()
       }
+      if (!encoder.current) {
+        const { Mp3Encoder } = await import('lamejs')
+        encoder.current = new Mp3Encoder(1, 44100, 96)
+      }
       if (stream.current) {
         if (!recorder.current) {
           const {
@@ -223,10 +227,6 @@ export const useWhisper: UseWhisperHook = (config) => {
             stream.current,
             recorderConfig
           )
-        }
-        if (!encoder.current) {
-          const { Mp3Encoder } = await import('lamejs')
-          encoder.current = new Mp3Encoder(1, 44100, 96)
         }
         const recordState = await recorder.current.getState()
         if (recordState === 'inactive' || recordState === 'stopped') {
