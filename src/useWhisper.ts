@@ -539,7 +539,7 @@ export const useWhisper: UseWhisperHook = (config) => {
           }
           console.log('onInterim', { result })
           if (result) {
-            setTranscript((prev) => ({ ...prev, result }))
+            setTranscript((prev) => ({ ...prev, text: result }))
           }
         }
       }
