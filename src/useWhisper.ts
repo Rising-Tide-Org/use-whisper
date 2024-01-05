@@ -87,10 +87,15 @@ export const useWhisper: UseWhisperHook = (config) => {
 
   const [recording, setRecording] = useState<boolean>(false)
   const [speaking, setSpeaking] = useState<boolean>(false)
+  const speakingRef = useRef(speaking)
   const [transcribing, setTranscribing] = useState<boolean>(false)
   const [transcript, setTranscript] =
     useState<UseWhisperTranscript>(defaultTranscript)
   const [isTranscribingError, setIsTranscribingError] = useState<boolean>(false)
+
+  useEffect(() => {
+    speakingRef.current = speaking
+  }, [speaking])
 
   const ffmpegRef = useRef<FFmpeg>()
   const [ffmpegCoreLoaded, setFFmpegCoreLoaded] = useState<boolean>(false)
@@ -515,7 +520,7 @@ export const useWhisper: UseWhisperHook = (config) => {
   const onDataAvailable = async (data: Blob) => {
     console.log('onDataAvailable', data)
     try {
-      if (streaming && recorder.current) {
+      if (streaming && recorder.current && speakingRef.current) {
         onDataAvailableCallback?.(data)
         if (encoder.current) {
           const buffer = await data.arrayBuffer()

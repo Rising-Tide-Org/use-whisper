@@ -16,6 +16,8 @@ function App() {
     startTranscribing,
   } = useWhisper({
     apiKey: key,
+    streaming: true,
+    timeSlice: 1_000,
     removeSilence: true,
     ffmpegCoreURL: 'http://127.0.0.1:8000/ffmpeg-core.js',
   })
