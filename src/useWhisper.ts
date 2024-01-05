@@ -274,8 +274,12 @@ export const useWhisper: UseWhisperHook = (config) => {
           interval: 100,
           play: false,
         })
-        listener.current.on('speaking', onStartSpeaking)
-        listener.current.on('stopped_speaking', onStopSpeaking)
+        if (typeof listener.current.stop === 'function') {
+          listener.current.on('speaking', onStartSpeaking)
+          listener.current.on('stopped_speaking', onStopSpeaking)
+        } else {
+          setSpeaking(true)
+        }
       }
     } catch (err) {
       console.error(err)
@@ -385,10 +389,14 @@ export const useWhisper: UseWhisperHook = (config) => {
    */
   const onStopStreaming = () => {
     if (listener.current) {
-      // @ts-ignore
-      listener.current.off('speaking', onStartSpeaking)
-      // @ts-ignore
-      listener.current.off('stopped_speaking', onStopSpeaking)
+      if (typeof listener.current.stop === 'function') {
+        // @ts-ignore
+        listener.current.off('speaking', onStartSpeaking)
+        // @ts-ignore
+        listener.current.off('stopped_speaking', onStopSpeaking)
+      } else {
+        setSpeaking(false)
+      }
       listener.current = undefined
     }
     if (stream.current) {
@@ -520,11 +528,7 @@ export const useWhisper: UseWhisperHook = (config) => {
   const onDataAvailable = async (data: Blob) => {
     console.log('onDataAvailable', data)
     try {
-      const isSpeaking =
-        typeof listener.current?.stop === 'function'
-          ? speakingRef.current
-          : true
-      if (streaming && recorder.current && isSpeaking) {
+      if (streaming && recorder.current && speakingRef.current) {
         onDataAvailableCallback?.(data)
         if (encoder.current) {
           const buffer = await data.arrayBuffer()
