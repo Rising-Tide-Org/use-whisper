@@ -520,7 +520,11 @@ export const useWhisper: UseWhisperHook = (config) => {
   const onDataAvailable = async (data: Blob) => {
     console.log('onDataAvailable', data)
     try {
-      if (streaming && recorder.current && speakingRef.current) {
+      const isSpeaking =
+        typeof listener.current?.stop === 'function'
+          ? speakingRef.current
+          : true
+      if (streaming && recorder.current && isSpeaking) {
         onDataAvailableCallback?.(data)
         if (encoder.current) {
           const buffer = await data.arrayBuffer()
