@@ -5,6 +5,5 @@ yarn-error.log
 yarn-debug.log
 .env
 lib
-dist
 build
 src/secret.ts
