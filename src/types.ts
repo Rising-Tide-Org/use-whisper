@@ -12,6 +12,7 @@ export type UseWhisperConfig = {
   onDataAvailable?: (blob: Blob) => void
   onTranscribe?: (blob: Blob) => Promise<UseWhisperTranscript>
   ffmpegCoreURL?: string
+  voiceActivationThreshold?: number
 }
 
 export type UseWhisperTimeout = {

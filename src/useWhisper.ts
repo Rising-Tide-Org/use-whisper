@@ -34,6 +34,7 @@ const defaultConfig: UseWhisperConfig = {
   onDataAvailable: undefined,
   onTranscribe: undefined,
   ffmpegCoreURL: defaultFFmpegCoreUrl,
+  voiceActivationThreshold: -50,
 }
 
 /**
@@ -69,6 +70,7 @@ export const useWhisper: UseWhisperHook = (config) => {
     onDataAvailable: onDataAvailableCallback,
     onTranscribe: onTranscribeCallback,
     ffmpegCoreURL,
+    voiceActivationThreshold,
   } = {
     ...defaultConfig,
     ...config,
@@ -273,7 +275,7 @@ export const useWhisper: UseWhisperHook = (config) => {
         listener.current = hark(stream.current, {
           interval: 100,
           play: false,
-          threshold: -50,
+          threshold: voiceActivationThreshold,
         })
         if (typeof listener.current.stop === 'function') {
           listener.current.on('speaking', onStartSpeaking)

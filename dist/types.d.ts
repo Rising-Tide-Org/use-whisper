@@ -12,6 +12,7 @@ type UseWhisperConfig = {
     onDataAvailable?: (blob: Blob) => void;
     onTranscribe?: (blob: Blob) => Promise<UseWhisperTranscript>;
     ffmpegCoreURL?: string;
+    voiceActivationThreshold?: number;
 };
 type UseWhisperTimeout = {
     stop?: NodeJS.Timeout;
